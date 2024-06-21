@@ -1,0 +1,13 @@
+#pragma kernel Multiply
+
+struct Point {
+	float3 Position;
+	float3x3 Matrix;
+};
+
+RWStructuredBuffer<Point> points;
+
+[numthreads(16, 1, 1)]
+void Multiply(uint3 thread : SV_DispatchThreadID) {
+	points[thread.x].Position = mul(points[thread.x].Matrix, float4(points[thread.x].Position, 1.0).xyz);
+}
