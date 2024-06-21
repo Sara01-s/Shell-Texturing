@@ -55,13 +55,13 @@ Shader "Custom/Unlit/sh_shell_texturing" {
 			}
 
             fixed4 FragShader(VertexOut i) : SV_Target {
-				i.uv *= 100.0;
+				i.uv *= _Density;
 				// tid = Thread Id, aquí se utiliza para describir una hilera de shell
 				uint2 tid = uint2(i.uv);
-				uint seed = tid.x;
+				uint seed = 1;
 				//uint seed = tid.x + (tid.y * 2000U);
 				float rand = hash(seed);
-				
+
                 return fixed4(float3(rand, rand, rand), 1.0);
             }
 

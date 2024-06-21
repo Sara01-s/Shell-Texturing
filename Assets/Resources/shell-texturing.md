@@ -10,7 +10,7 @@ tags:
 image: /images/post.jpg
 description: "Learning to implement Shell Texturing"
 mathjax: true
-toc:
+toc:rrrrr
 ---
 
 # Shell texturing
@@ -41,9 +41,17 @@ Realizamos la operación para analizar su comportamiento.
 
 Con este ejemplo, podemos concluir que el objetivo de esta operación es convertir cualquier número en positivo.
 
-Ahora que tenemos una función de hash, podemos asignar un valor pseudoaleatorio entre $[0, 1]$ por cada segmento de `uv` dentro de una variable `rand` con el siguiente código.
+Luego, al dividir el número `n` positivo resultante por el mayor valor posible que puede tomar, estaremos realizando una **normalización** del valor, llevándolo `n` a un rango entre $[0, 1)$, si bien obtener el número $1$ es *teóricamente posible*, debido a la naturaleza imprecisa de los números flotantes, se toma el dominio de la función como $(0 <= x < 1)$ (ya que para obtener 1, `n` tendría que valer *exactamente* INT_MAX).
 
+Ahora que entendemos el comportamiento de la función de hash, podemos utilizarla para asignar un valor pseudo-aleatorio entre $[0, 1)$ por cada segmento de `uv`. Guardaremos este valor dentro de la variable `rand`.
 
+```hlsl
+float rand = hash(seed);
+```
+
+Vemos que para asignar el valor `rand` aún nos hace falta un valor `uint` que llamamos `seed`, podemos pensar en este valor como la *key* de un hashmap.
+
+Por ejemplo, podemos asignar la seed a $1$.
 
 ![](imgs/img_uv_with_id.png)
 *Figura 1. valor pseudo-aleatorio $0.754$ en un rango `uv` de $[0, 1]$.*
