@@ -65,6 +65,15 @@ Shader "Custom/Unlit/sh_shell_texturing" {
 				uint2 cell = uint2(i.uv);
 				float rand = hash(seed(cell.x, cell.y, _NumCells + 1));
 
+				rand = round(rand);
+
+				if (rand > 0) {
+
+				}
+				else {
+					discard;
+				}
+
                 return fixed4(rand, 0.0, 0.0, 1.0);
             }
 

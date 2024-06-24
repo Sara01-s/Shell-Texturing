@@ -110,6 +110,11 @@ Ya que $y_1, y_2 \in \mathbb{N}$, cuando $y_2 \ne y_1$, tenemos que el **mínimo
 
 Ahora que sabemos que $x_1 - x_2 \ge t$, nos viene bien recordar que $x_1, x_2 \le$ `numcells` por lo que *necesariamente* $x_1 - x_2 \le$ `numCells`. Es ahí donde encontramos el punto débil de la igualdad entre 2 `seed`, si forzamos un valor $t >$ `numCells`, romperemos la igualdad definida por $x_1 + y_1t = x_2 + y_2t$. Esto quiere decir que con un valor $t \ge$ `numCells + 1`, es imposible que se repitan las `seed` en nuestra grilla.
 
+# Creating the shells
+---
+
+Ahora que tenemos nuestra grilla de números pseudo-aleatorios en la superficie de nuestro mesh, podemos crear nuestro primer `shell`
+
 ## References:
 
 [1]M. Bischoff, “The World’s Simplest Theorem Shows That 8,000 People Globally Have the Same Number of Hairs on Their Head,” Scientific American, Mar. 20, 2023. https://www.scientificamerican.com/article/the-worlds-simplest-theorem-shows-that-8-000-people-globally-have-the-same-number-of-hairs-on-their-head/ (accessed Jun. 13, 2024).
