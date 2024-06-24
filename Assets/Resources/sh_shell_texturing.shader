@@ -33,8 +33,9 @@ Shader "Custom/Unlit/sh_shell_texturing" {
 
             sampler2D _MainTex;
             float4 _MainTex_ST;
-			float _Density;
+            
 			int _NumCells;
+            float _Height;
 
 			
             VertexOut VertShader(VertexIn i) {
@@ -65,16 +66,16 @@ Shader "Custom/Unlit/sh_shell_texturing" {
 				uint2 cell = uint2(i.uv);
 				float rand = hash(seed(cell.x, cell.y, _NumCells + 1));
 
-				rand = round(rand);
+                float3 color = float3(0.0, 0.0, 0.0);
 
-				if (rand > 0) {
-
+				if (rand > _Height) {
+                    color = float3(1.0, 0.0, 0.0);
 				}
 				else {
 					discard;
 				}
 
-                return fixed4(rand, 0.0, 0.0, 1.0);
+                return fixed4(color + _Height, 1.0);
             }
 
             ENDCG

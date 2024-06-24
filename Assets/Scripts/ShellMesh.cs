@@ -11,11 +11,9 @@ internal sealed class ShellMesh : MonoBehaviour {
 	[Range(1, 100)]
 	[SerializeField] private uint _numShells;
 
-	[Range(0.0f, 1000.0f)]
-	[SerializeField] private float _density = 100.0f;
-
+	[Range(0.1f, 10.0f)]
+	[SerializeField] private float _distanceBetweenShells = 0.1f;
 	[SerializeField] private int _numCells = 1;
-
 
 	private Material _material;
 	private GameObject[] _layers;
@@ -25,7 +23,7 @@ internal sealed class ShellMesh : MonoBehaviour {
 	}
 
 	private void OnValidate() {
-		if (_updateOnValidate) {
+		if (_updateOnValidate && Application.isPlaying) {
 			UpdateShellProperties();
 		}
 	}
@@ -34,11 +32,19 @@ internal sealed class ShellMesh : MonoBehaviour {
 		_material = new Material(_shellShader);
 		_layers = new GameObject[_numShells];
 
+		float currentHeight = 0.0f;
+
 		for (int i = 0; i < _layers.Length; i++) {
 			_layers[i] = new GameObject($"Shell {i}");
 			_layers[i].transform.SetParent(transform, worldPositionStays: false);
 			_layers[i].transform.localScale = Vector3.one * 2.0f;
 			_layers[i].transform.rotation = Quaternion.AngleAxis(180.0f, Vector3.up);
+
+			var shellPos = _layers[i].transform.transform.localPosition;
+			var shellHeight = new Vector3(shellPos.x, currentHeight, shellPos.z);
+
+			_layers[i].transform.transform.localPosition = shellHeight;
+			currentHeight += _distanceBetweenShells;
 
 			var shellMesh = _layers[i].AddComponent<MeshFilter>();
 			var shellRenderer = _layers[i].AddComponent<MeshRenderer>();
@@ -48,16 +54,17 @@ internal sealed class ShellMesh : MonoBehaviour {
 			shellRenderer.receiveShadows = false;
 			shellRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 
-			UpdateShellProperties();
 		}
+
+		UpdateShellProperties();
 	}
 
 	private void UpdateShellProperties() {
 		for (int i = 0; i < _layers.Length; i++) {
 			var shellProperties = new MaterialPropertyBlock();
 
-			shellProperties.SetFloat("_Density", _density);
 			shellProperties.SetInt("_NumCells", _numCells);
+			shellProperties.SetFloat("_Height", _layers[i].transform.localPosition.y);
 
 			_layers[i].GetComponent<MeshRenderer>().SetPropertyBlock(shellProperties);
 		}

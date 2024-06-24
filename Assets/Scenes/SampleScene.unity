@@ -38,6 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
+  m_IndirectSpecularColor: {r: 0.44657856, g: 0.4964146, b: 0.5748176, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -340,8 +341,8 @@ MonoBehaviour:
   _mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
   _shellShader: {fileID: 4800000, guid: f807b2929bb4ccc419a7789ec9bac629, type: 3}
   _updateOnValidate: 0
-  _numShells: 1
-  _density: 1
+  _numShells: 7
+  _distanceBetweenShells: 0.5
   _numCells: 100
 --- !u!4 &1297144843
 Transform:

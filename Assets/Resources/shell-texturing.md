@@ -113,7 +113,20 @@ Ahora que sabemos que $x_1 - x_2 \ge t$, nos viene bien recordar que $x_1, x_2 \
 # Creating the shells
 ---
 
-Ahora que tenemos nuestra grilla de números pseudo-aleatorios en la superficie de nuestro mesh, podemos crear nuestro primer `shell`
+Ahora que tenemos nuestra grilla de números pseudo-aleatorios en la superficie de nuestro mesh, podemos crear nuestro primer `shell`, para esto definiremos el color del pixel dada la siguiente condición:
+```hlsl
+float3 pixelColor = float3(0.0, 0.0, 0.0); // pixel negro
+
+// Utilizo 0.005 como ejemplo de valor muy pequeño
+if (rand > 0.005) {
+    pixelColor = float3(1.0, 0.0, 0.0); // rojo
+}
+else {
+    discard; // si rand no cumple la condición, el pixel será descartado
+}
+```
+
+
 
 ## References:
 
