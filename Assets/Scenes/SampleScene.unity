@@ -337,11 +337,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7bba7cc936695d4e863f47385b21168, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _mesh: {fileID: 3707834480863051280, guid: af5d01353c2f2714fb7ca11b2ba31bd8, type: 3}
+  _mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
   _shellShader: {fileID: 4800000, guid: f807b2929bb4ccc419a7789ec9bac629, type: 3}
   _updateOnValidate: 0
   _numShells: 1
-  _density: 100
+  _density: 1
+  _test: 1
 --- !u!4 &1297144843
 Transform:
   m_ObjectHideFlags: 0

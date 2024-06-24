@@ -34,6 +34,7 @@ Shader "Custom/Unlit/sh_shell_texturing" {
             sampler2D _MainTex;
             float4 _MainTex_ST;
 			float _Density;
+			int _NumCells;
 
 			
             VertexOut VertShader(VertexIn i) {
@@ -48,21 +49,23 @@ Shader "Custom/Unlit/sh_shell_texturing" {
 
 			// Thanks to Hugo Elias
 			float hash(uint n) {
-				n = (n << 13U) ^ n;
-				n = n * (n * n * 15731U + 0x789221U) + 0x1376312589U;
+				n = (n << 13u) ^ n;
+				n = n * (n * n * 15731u + 0x789221u) + 0x1376312589u;
 				
-				return float(n & uint(0x7fffffffU)) / float(0x7fffffff);
+				return float(n & uint(0x7fffffffu)) / float(0x7fffffff);
+			}
+
+			uint seed(uint cellX, uint cellY, uint t) {
+				return cellX + (cellY * t);
 			}
 
             fixed4 FragShader(VertexOut i) : SV_Target {
-				i.uv *= _Density;
-				// tid = Thread Id, aquí se utiliza para describir una hilera de shell
-				uint2 tid = uint2(i.uv);
-				uint seed = 1;
-				//uint seed = tid.x + (tid.y * 2000U);
-				float rand = hash(seed);
+				i.uv *= _NumCells;
 
-                return fixed4(float3(rand, rand, rand), 1.0);
+				uint2 cell = uint2(i.uv);
+				float rand = hash(seed(cell.x, cell.y, _NumCells + 1));
+
+                return fixed4(rand, 0.0, 0.0, 1.0);
             }
 
             ENDCG
