@@ -32,19 +32,11 @@ internal sealed class ShellMesh : MonoBehaviour {
 		_material = new Material(_shellShader);
 		_layers = new GameObject[_numShells];
 
-		float currentHeight = 0.0f;
-
 		for (int i = 0; i < _layers.Length; i++) {
 			_layers[i] = new GameObject($"Shell {i}");
 			_layers[i].transform.SetParent(transform, worldPositionStays: false);
 			_layers[i].transform.localScale = Vector3.one * 2.0f;
 			_layers[i].transform.rotation = Quaternion.AngleAxis(180.0f, Vector3.up);
-
-			var shellPos = _layers[i].transform.transform.localPosition;
-			var shellHeight = new Vector3(shellPos.x, currentHeight, shellPos.z);
-
-			_layers[i].transform.transform.localPosition = shellHeight;
-			currentHeight += _distanceBetweenShells;
 
 			var shellMesh = _layers[i].AddComponent<MeshFilter>();
 			var shellRenderer = _layers[i].AddComponent<MeshRenderer>();
@@ -53,7 +45,6 @@ internal sealed class ShellMesh : MonoBehaviour {
 			shellRenderer.SetMaterials(new List<Material>() { _material });
 			shellRenderer.receiveShadows = false;
 			shellRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-
 		}
 
 		UpdateShellProperties();

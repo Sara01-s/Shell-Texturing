@@ -68,14 +68,14 @@ Shader "Custom/Unlit/sh_shell_texturing" {
 
                 float3 color = float3(0.0, 0.0, 0.0);
 
-				if (rand > _Height) {
+				if (rand > 0.005) {
                     color = float3(1.0, 0.0, 0.0);
 				}
 				else {
-					discard;
+					
 				}
 
-                return fixed4(color + _Height, 1.0);
+                return fixed4(color, 1.0);
             }
 
             ENDCG

@@ -38,7 +38,6 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.44657856, g: 0.4964146, b: 0.5748176, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -211,7 +210,7 @@ Transform:
   m_GameObject: {fileID: 705507993}
   serializedVersion: 2
   m_LocalRotation: {x: 0.35494515, y: -0.49192962, z: 0.22939038, w: 0.7611827}
-  m_LocalPosition: {x: 0, y: 3, z: -10}
+  m_LocalPosition: {x: 0, y: 3, z: -50}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -302,8 +301,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.47019574, y: 0, z: 0, w: 0.8825622}
-  m_LocalPosition: {x: -0.12780665, y: 12.616888, z: -11.568316}
+  m_LocalRotation: {x: -0.095787145, y: -0.0050037093, z: 0.00045829176, w: -0.99538916}
+  m_LocalPosition: {x: 0.0033591539, y: 3.4706335, z: -21.745472}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -341,8 +340,8 @@ MonoBehaviour:
   _mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
   _shellShader: {fileID: 4800000, guid: f807b2929bb4ccc419a7789ec9bac629, type: 3}
   _updateOnValidate: 0
-  _numShells: 7
-  _distanceBetweenShells: 0.5
+  _numShells: 3
+  _distanceBetweenShells: 0.1
   _numCells: 100
 --- !u!4 &1297144843
 Transform:

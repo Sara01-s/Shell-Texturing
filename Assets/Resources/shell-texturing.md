@@ -113,18 +113,35 @@ Ahora que sabemos que $x_1 - x_2 \ge t$, nos viene bien recordar que $x_1, x_2 \
 # Creating the shells
 ---
 
+Como el título de esta sección indica, debemos crear múltiples shells (planos con el shader) para conseguir el efecto final, para esto definiremos una variable llamada `_NumShells`, la cual indica cuantas capas de shells se deben crear.
+
+Ejemplo de 16 shellls instanciados:
+![](imgs/img_shells_no_height.png)
+Como vemos aún parece que es un único shell, esto se debe a que todos comparten el mismo punto de origen y altura por lo que es necesario desplazar cada vértice del shell por un valor `height`.
+
+Luego de crear un número `_NumShells` de shells, notaremos que todos están en el mismo lugar en la posición del mundo.
+
+
 Ahora que tenemos nuestra grilla de números pseudo-aleatorios en la superficie de nuestro mesh, podemos crear nuestro primer `shell`, para esto definiremos el color del pixel dada la siguiente condición:
 ```hlsl
-float3 pixelColor = float3(0.0, 0.0, 0.0); // pixel negro
-
-// Utilizo 0.005 como ejemplo de valor muy pequeño
 if (rand > 0.005) {
     pixelColor = float3(1.0, 0.0, 0.0); // rojo
 }
 else {
-    discard; // si rand no cumple la condición, el pixel será descartado
+    pixelColor = float3(0.0, 0.0, 0.0) // negro
 }
 ```
+
+Vemos que esta condición produce el siguiente resultado:
+
+![](imgs/img_black_dots.png)
+
+Es esperable que la mayoría de celdas tengan un valor `rand` $> 0.005$ asociado, esto se ve reflejado como muchas `cells` rojas y pocas negras.
+Si 
+
+
+
+
 
 
 
