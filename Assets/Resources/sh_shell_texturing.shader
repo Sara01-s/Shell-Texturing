@@ -14,35 +14,48 @@ Shader "Custom/Unlit/sh_shell_texturing" {
             CGPROGRAM
             #pragma vertex VertShader
             #pragma fragment FragShader
-            #pragma multi_compile_fog
-
-			#define c1 0xcc9e2d51u
-			#define c2 0x1b873593u
 
             #include "UnityCG.cginc"
 
             struct VertexIn {
                 float4 pos : POSITION;
                 float2 uv : TEXCOORD0;
+				float3 normal : NORMAL;
+				float3 tanget : TANGENT;
             };
 
             struct VertexOut {
                 float2 uv : TEXCOORD0;
                 float4 pos : SV_POSITION;
+				float3 normalWorld : TEXCOORD1;
             };
 
             sampler2D _MainTex;
             float4 _MainTex_ST;
             
 			int _NumCells;
-            float _Height;
+			int _NumShells;
+			int _ShellIndex;
+			float _ShellsSeparation;
+
+			float _LightAttenuation;
+			float _HeightAttenuation;
+			float _ShellLength;
+			float _CellThickness;
 
 			
             VertexOut VertShader(VertexIn i) {
                 VertexOut output;
-                
+
+				float height = (float)_ShellIndex / (float)_NumShells;
+				height *= _ShellsSeparation;
+				height = pow(height, _HeightAttenuation);
+
+				i.pos.xyz += i.normal * _ShellLength * height;
+
                 output.pos = UnityObjectToClipPos(i.pos);
                 output.uv = TRANSFORM_TEX(i.uv, _MainTex);
+				output.normalWorld = normalize(mul((float3x3)unity_WorldToObject, i.normal));
 
                 return output;
             }
@@ -66,16 +79,20 @@ Shader "Custom/Unlit/sh_shell_texturing" {
 				uint2 cell = uint2(i.uv);
 				float rand = hash(seed(cell.x, cell.y, _NumCells + 1));
 
-                float3 color = float3(0.0, 0.0, 0.0);
+                float3 color = float3(1.0, 0.0, 0.0);
+				float height = (float)_ShellIndex / (float)_NumShells;
 
-				if (rand > 0.005) {
-                    color = float3(1.0, 0.0, 0.0);
-				}
-				else {
-					
+				float2 cellUv = frac(i.uv) * 2.0 - 1.0;
+				float d = length(cellUv);
+
+				if (d > _CellThickness * (rand - height) && _ShellIndex > 0) {
+					discard;
 				}
 
-                return fixed4(color, 1.0);
+				float ldot = dot(normalize(_WorldSpaceLightPos0.xyz), i.normalWorld);
+				float lSmooth = smoothstep(0.0, 0.1, ldot);
+
+                return fixed4(color * pow(height, _LightAttenuation) * ldot, 1.0);
             }
 
             ENDCG

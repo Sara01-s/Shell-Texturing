@@ -54,7 +54,7 @@ Luego, al dividir el valor absoluto de `n` por `0x7fffffffu` (el mayor valor pos
 
 ---
 
-El objetivo ahora es lograr crear una grilla con celdas que tengan un valor pseudo-aleatorio entre [0, 1] asociado, veremos como realizar esta tarea paso por paso.
+El objetivo ahora es lograr crear una grilla con celdas que tengan un valor pseudo-aleatorio entre $[0, 1]$ asociado, veremos como realizar esta tarea paso por paso.
 
 Si devolvemos uv.x en el canal rojo del fragment shader obtendremos este output:
 
@@ -88,39 +88,40 @@ Este problema es aún más evidente si multiplicamos `uv` por `numCells = 100`.
 Sin embargo, si multiplicamos `uv.y` por `numCells + 1`, obtenemos:
 ![](imgs/img_uv_numcellsplus1.png)
 
-¿Cómo?, ¿que clase de magia es esa?, ¿Acaso esa multiplicación me apareció en un sueño?. Bueno, la realidad es que se debe a como funciona nuestra fórmula, podemos expresar la creación de la seed como $s(x, y) := x + yt$ donde $t$ es una constante `uint` que podremos ajustar a gusto.
+¿Cómo?, ¿que clase de magia es esa?, ¿Acaso esa multiplicación me apareció en un sueño?. Bueno, la realidad es que se debe a como funciona nuestra fórmula (y ayuda de parte de Francisco). Podemos expresar la creación de la seed como $s(x, y) := x + yt$ donde $t$ es una constante `uint` que podremos ajustar a gusto.
 
 Queremos que la `seed` no se reptia para dos input `x, y`, para esto, debemos analizar que significa que dos `seed` sean iguales expresándo tal igualdad utilizando la definición de $s(x, y)$.
 
-$$x_1 + y_1t = x_2 + y_2t$$
+$$x_1 + y_1t = x_2 + y_2t.$$
 
 Si restamos $x_2$ en ambos lados y factorizamos por $t$ en el lado derecho nos queda que
 
-$$x_1 - x_2 = t(y_2 - y_1)$$
+$$x_1 - x_2 = t(y_2 - y_1).$$
 
 Ahora, analizando el caso de que $y_1 = y_2$, notamos que
 
-$$x_1 - x_2 = t(y_2 - y_1) = 0 \implies x_1 = x_2$$
+$$x_1 - x_2 = t(y_2 - y_1) = 0 \implies x_1 = x_2.$$
 
 Y si $x_1 = x_2$ e $y_1 = y_2$, significa que estamos hablando del mismo punto (x, y), lo cual demuestra la unicidad de un seed en una fila de la grilla.
 
 // TODO - ¿Cómo indexo ecuaciones?
 
-Ya que $y_1, y_2 \in \mathbb{N}$, cuando $y_2 \ne y_1$, tenemos que el **mínimo valor** posible del **lado derecho** de la ecuación[req. index] **es $t$** (en el caso $y_1 = 0, y_2 = 1$).
+Ya que el caso $y_1 = y_2$ está abordado, prosigamos con el caso cuando $y_2 \ne y_1$ (celdas en distintas filas), tenemos que el **mínimo valor** posible del *valor absoluto* **del lado derecho** de la ecuación[req. index] **es $t$** (en el caso $y_1 = 0, y_2 = 1$). Concluimos que:
 
-Ahora que sabemos que $x_1 - x_2 \ge t$, nos viene bien recordar que $x_1, x_2 \le$ `numcells` por lo que *necesariamente* $x_1 - x_2 \le$ `numCells`. Es ahí donde encontramos el punto débil de la igualdad entre 2 `seed`, si forzamos un valor $t >$ `numCells`, romperemos la igualdad definida por $x_1 + y_1t = x_2 + y_2t$. Esto quiere decir que con un valor $t \ge$ `numCells + 1`, es imposible que se repitan las `seed` en nuestra grilla.
+$$t \le |x_1 - x_2|.$$
+
+
+Nos viene bien recordar que $x_1, x_2 \le$ `numcells` por lo que *necesariamente* $x_1 - x_2 \le$ `numCells`. También podemos concluir que,
+
+$$|x_1 - x_2| \le \mathtt{numCells}.$$
+
+Por lo tanto hemos probado que si las semillas son iguales en celdas de  distintas filas entonces $t \le$ `numCells`.
+
+Aquí notamos que podemos elegir un valor de $t$ que sea estrictamente mayor que `numCells` y eso obligaría necesariamente que las semillas sean **distintas**.
+
 
 # Creating the shells
 ---
-
-Como el título de esta sección indica, debemos crear múltiples shells (planos con el shader) para conseguir el efecto final, para esto definiremos una variable llamada `_NumShells`, la cual indica cuantas capas de shells se deben crear.
-
-Ejemplo de 16 shellls instanciados:
-![](imgs/img_shells_no_height.png)
-Como vemos aún parece que es un único shell, esto se debe a que todos comparten el mismo punto de origen y altura por lo que es necesario desplazar cada vértice del shell por un valor `height`.
-
-Luego de crear un número `_NumShells` de shells, notaremos que todos están en el mismo lugar en la posición del mundo.
-
 
 Ahora que tenemos nuestra grilla de números pseudo-aleatorios en la superficie de nuestro mesh, podemos crear nuestro primer `shell`, para esto definiremos el color del pixel dada la siguiente condición:
 ```hlsl
@@ -136,8 +137,98 @@ Vemos que esta condición produce el siguiente resultado:
 
 ![](imgs/img_black_dots.png)
 
-Es esperable que la mayoría de celdas tengan un valor `rand` $> 0.005$ asociado, esto se ve reflejado como muchas `cells` rojas y pocas negras.
-Si 
+Es esperable que si `rand` $\in [0, 1]$, la mayoría de celdas tengan un valor mayor que $0.005$ asociado. Podemos ver esto reflejado como muchas `cells` rojas y pocas negras.
+
+Ahora, como el título de esta sección indica, debemos crear múltiples shells (planos con el shader) para conseguir el efecto final, para esto definiremos una variable llamada `_NumShells`, la cual indica cuantas capas de shells se deben crear.
+
+Ejemplo de 16 shellls instanciados:
+![](imgs/img_shells_no_height.png)
+Bueno... no es el resultando que uno espera, vemos aún parece que es un único shell. Esto se debe a que todos comparten el mismo punto de origen y por lo tanto, sus vértices son iguales. Es necesario extruir cada vértice del shell por un valor que llamaremos `height`.
+
+Para definir el valor de `height` primero es necesario indexar cada shell con un valor `_ShellIndex`, el que será divido por `_NumShells` para así obtener un valor `height` **normalizado**.
+
+![](imgs/img_shells_with_height.png)
+*posición y de los vértices + height*
+
+La magia comienza a aparecer cuando cambiamos el valor arbitrario `0.005` que habíamos establecido en la condición[req. index] por `height`.
+
+![](imgs/img_rand_lt_height.png)
+El valor `rand` al estar en el rango $[0, 1]$, tiene menos probabilidades de ser mayor que `height`, si este es cercano a $1$, lo cual es el caso de las capas superiores.
+
+Aúnque los pixeles negros de cada shell son fantásticos para visualizar que está ocurriendo detrás de cámaras, claramente no nos dejan ver el verdadero efecto que estamos creando, por lo que utilizaremos la palabra clave de HLSL `discard`, para eliminar dichos pixeles y poder ver a través de ellos.
+
+![](imgs/img_black_pixels_discarded.png)
+¡Excelente, los pixeles negros se han ido!, sin embargo no existe suficiente contraste para discernir la profundidad entre los pixeles, ¡pero no pasa nada!, podemos implementar un modelo de iluminación *naive* simplemente multiplicando el color resultante del pixel por el `height` del shell.
+
+![](imgs/img_color_times_height.png) 
+Ya que la altura es $0$ en la base y $1$ en la superficie de nuestro shell, el color incrementará su intensidad linearmente. De forma adicional, dentro de este cálculo de iluminación podemos elevar `height` a un exponente `_LightAttenuation`, para romper el comportamiento linear.
+
+![](imgs/gif_light_attenuation.gif)
+*light attenuation variando de 0 a 10*
+
+Los resultados que tenemos actualmente son muy decentes, sin embargo es muy fácil romper la ilusión simplemente bajando un poco la cámara.
+
+![](imgs/img_broken_illusion.png)
+
+Aumentaremos o disminuiremos la separación de los shells multiplicando el valor `height` por un valor `_ShellsSeparation` $\in [0, 10]$ dentro del vertex shader.
+
+![](imgs/gif_shell_separation.gif)
+*shell separation en funcionamiento*
+
+Si establecemos `_NumShells` y `_NumCells` a $128$ y ajustamos la separación entre capas a $0.75$, podremos obtener un efecto de mejor resolución.
+
+![](imgs/img_highres_zoomed.png)
+
+# Grass
+
+Si bien con la implementación actual podemos conseguir algo parecido a lo logrado en *Viva Piñata (2007)*, nuestro Shell Texturing tiene una gran desventaja y es que solo funciona verticalmente, si añadimos el shader a un mesh esférico obtendremos esto.
+
+![](imgs/img_shells_in_sphere_bad.png)
+Uno esperaría que los shells se extruyeran de forma ortogonal a las caras del mesh, para lograr eso debemos desplazar la posición del vector en dirección a la *normal* (no olvidemos escalar la normal por `height` también).
+
+![](imgs/img_sphere_normals.png)
+Nuestra esféra se ve mucho mejor ahora, aunque algo cuadrada. Si no se es muy fan de un estilo tipo Cube World, podemos mejorar el efecto para conseguir una ilusión de hebras de césped.
+
+Para lograr un efecto más parecido al pasto debemos dividir el espacio en segmentos de coordenadas `uv` para cada hoja de pasto. Este es el caso idóneo para utilizar la función `frac()`, la cual nos devuelve el valor decimal de un número flotante.
+
+![](imgs/img_fract.png)
+*comportamiento de la función fract(x)*
+
+Si volvemos atrás un momento y retornamos las coordenadas `uv` en un plano, notamos como en la esquina inferior izquierda se ve el espacio `uv` original y luego simplemente se escala por `_NumCells`.
+
+![](imgs/img_uv_pre_frac.png)
+
+La idea es repetir las coordenadas `uv` normalizadas en todas las celdas de la grilla, es por eso eso que utilizaremos la función `frac()` en las coordenadas `uv`, así sus componentes no podrán escalar más allá de $1$ y serán encerrados en el rango $[0, 1]$.
+
+![](imgs/img_uv_frac.png)
+Misión cumplida, aunque es difícil distinguir bien las coordenadas, por lo que haremos zoom para hacer algunos ajustes quirúrjicos.
+
+![](imgs/img_uv_frac_zoomed.png)
+Primero, podemos verificar que cada celda tiene sus propias coordenadas `uv` normalizadas las cual llamaremos `cellUv`. También notamos que el origen de las coorderdenadas se encuentra en la parte superior izquierda de la celda, lo que no es deseable para la próxima operación que realizaremos, por lo que para desplazar el origen al centro de la celda restaremos $0.5$ a `cellUv`.
+
+![](imgs/img_centered_frac_uv.png)
+Con tal operación hemos efectivamente centraddo `cellUv`, sin embargo notamos que las celdas perdieron luminosidad, esto es debido a que al restar $0.5$ a ambos elementos de `cellUv` hemos llevado las coordenadas a un rango $[-0.5, 0.5]$, lo cuál es algo incómodo... así que multiplicaremos `cellUv` por $2$ para establecer el valor los componentes de `cellUv` dentro del rango $[-1, 1]$.
+
+![](imgs/img_centered_frac_uv_times_2.png)
+Ahora que tenemos el origen `cellUv` podemos dibujar un círculo de forma muy sencilla, simplemente calculamos el `length()` de cada `cellUv` respecto al origen.
+
+![](imgs/img_cell_uv_length.png)
+Luego con nuestro truco anterior, descartamos los pixeles si son mayores que un valor que llamaremos `_CellThickness` $\in [0, 1.5]$.
+
+![](imgs/gif_cell_thickness.gif)
+*Cell thickness variando de 0 a 1.5*
+
+Establecemos `_CellThicknes` en $0.6$ y devolvemos el color para producir el siguiente resultado:
+
+![](imgs/img_cell_thickness_no_base.png)
+El pasto está claramente cilíndrico, lo cual se ve bien pero sabemos que en realidad el pasto tiene una forma más parecida a un *cono*. Por suerte nuestra variable `height` vendrá al rescate una vez más, esta vez para atenuar la contribución de `_CellThickness` en el descarte de pixeles.
+
+![](imgs/img_wrong_height_attenuation.png)
+Efectivamente si multiplicamos `_CellThickness` por `height` hemos obtenido una forma reminicente a un cono, pero al revés... para solucionar esto realizaremos la multiplicación `_CellThickness` con `rand - height`
+
+![](imgs/img_correct_height_attenuation.png)
+bla bla bla rand - height
+
 
 
 
