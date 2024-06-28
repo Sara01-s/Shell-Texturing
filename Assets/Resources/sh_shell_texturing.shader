@@ -44,6 +44,7 @@ Shader "Custom/Unlit/sh_shell_texturing" {
 
 			float4 _Color;
 			float4 _ShadowColor;
+			float4 _SecondaryShadowColor;
 			float _LightAttenuation;
 			float _LightSmooth;
 			float _ShadowIntensity;
@@ -87,20 +88,26 @@ Shader "Custom/Unlit/sh_shell_texturing" {
 				float height = (float)_ShellIndex / (float)_NumShells;
 
 				float2 cellUv = frac(i.uv) * 2.0 - 1.0;
-				float d = length(cellUv);
 
-				if (d > _CellThickness * (rand - height) && _ShellIndex > 0) {
+				if (length(cellUv) > _CellThickness * (rand - height) && _ShellIndex > 0) {
 					discard;
 				}
 
 				float diffuse = dot(i.normalWorld, normalize(_WorldSpaceLightPos0.xyz));
 				float halfLambert = diffuse * 0.5 + 0.5;
 				float clampedHalfLambert = max(_ShadowIntensity, halfLambert);
+				
+
+				float diffuse2 = dot(i.normalWorld, normalize(_WorldSpaceLightPos0.xyz));
+				float smoothedDiffuse2 = smoothstep(0.0, 0.2, diffuse2);
+
 
 				float smoothedLight = smoothstep(0.0, _LightSmooth, clampedHalfLambert);
-				float4 lightColor = lerp(_ShadowColor, _Color, smoothedLight);
+				float4 primaryLightColor = lerp(_ShadowColor, _Color, smoothedLight);
 
-				return fixed4(lightColor);
+				float4 secondaryLightColor = lerp(primaryLightColor, _SecondaryShadowColor, smoothedLight);
+
+				return fixed4(primaryLightColor);
             }
 
             ENDCG

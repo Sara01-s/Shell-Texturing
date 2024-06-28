@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 internal sealed class ShellMesh : MonoBehaviour {
@@ -24,6 +23,7 @@ internal sealed class ShellMesh : MonoBehaviour {
 	[Header("Lighting")]
 	[SerializeField] private Color _color;
 	[SerializeField] private Color _shadowColor;
+	[SerializeField] private Color _secondaryShadowColor;
 	[Range(0.0f, 10.0f)]
 	[SerializeField] private float _lightAttenuation = 1.0f;
 	[Range(0.0f, 10.0f)]
@@ -58,7 +58,7 @@ internal sealed class ShellMesh : MonoBehaviour {
 			var shellRenderer = _layers[i].AddComponent<MeshRenderer>();
 
 			shellMesh.mesh = _mesh;
-			shellRenderer.SetMaterials(new List<Material>() { _material });
+			shellRenderer.material = _material;
 			shellRenderer.receiveShadows = false;
 			shellRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 		}
@@ -80,6 +80,7 @@ internal sealed class ShellMesh : MonoBehaviour {
 
 			shellProperties.SetColor("_Color", _color);
 			shellProperties.SetColor("_ShadowColor", _shadowColor);
+			shellProperties.SetColor("_SecondaryShadowColor", _secondaryShadowColor);
 			shellProperties.SetFloat("_ShadowIntensity", 1.0f - _shadowIntensity);
 			shellProperties.SetFloat("_LightAttenuation", _lightAttenuation);
 			shellProperties.SetFloat("_LightSmooth", _lightSmooth);
