@@ -99,15 +99,20 @@ Shader "Custom/Unlit/sh_shell_texturing" {
 				
 
 				float diffuse2 = dot(i.normalWorld, normalize(_WorldSpaceLightPos0.xyz));
-				float smoothedDiffuse2 = smoothstep(0.0, 0.2, diffuse2);
+				float smoothedDiffuse2 = smoothstep(0.0, 0.4, diffuse2);
 
 
 				float smoothedLight = smoothstep(0.0, _LightSmooth, clampedHalfLambert);
 				float4 primaryLightColor = lerp(_ShadowColor, _Color, smoothedLight);
 
 				float4 secondaryLightColor = lerp(primaryLightColor, _SecondaryShadowColor, smoothedLight);
+				float secondaryShadowMask = smoothstep(0.1, 0.5, smoothedDiffuse2) 
+										  * smoothstep(0.9, 0.3, smoothedDiffuse2);
+				
+				float4 lightColor = lerp(primaryLightColor, _SecondaryShadowColor, secondaryShadowMask);
+				
 
-				return fixed4(primaryLightColor);
+				return fixed4(lightColor);
             }
 
             ENDCG
