@@ -16,7 +16,8 @@ toc:rrrrr
 # Shell texturing
 ---
 
-Browsing Youtube, I found a [video about Shell Texturing](https://www.youtube.com/watch?v=9dr-tRQzij4) by Acerola, where he explains how difficult is to render and simulate hair, in average, humans have between `90,000` and `150,000` hairs on their head^[1], so one must image how geometrically complex would be a physically accurate simulation of hair.
+## Introducción
+Navegando por Youtube, encontré un [video sobre Shell Texturing](https://www.youtube.com/watch?v=9dr-tRQzij4) de Acerola, donde explica lo difícil que es renderizar y simular el pelo, de media, los humanos tenemos entre `90.000` y `150.000` pelos en la cabeza^[1], así que hay que imaginarse lo compleja que sería geométricamente una simulación físicamente precisa del pelo.
 
 ## Hashing
 ---
@@ -50,8 +51,7 @@ Con este ejemplo, podemos concluir que el objetivo de esta operación es obtener
 
 Luego, al dividir el valor absoluto de `n` por `0x7fffffffu` (el mayor valor posible que `n` puede tomar), estaremos realizando una **normalización** de `n`, por lo que el dominio de la función `hash` es $(0 \leq n \leq 1)$.
 
-## Generating the grid
-
+## Generando la grilla
 ---
 
 El objetivo ahora es lograr crear una grilla con celdas que tengan un valor pseudo-aleatorio entre $[0, 1]$ asociado, veremos como realizar esta tarea paso por paso.
@@ -110,7 +110,6 @@ Ya que el caso $y_1 = y_2$ está abordado, prosigamos con el caso cuando $y_2 \n
 
 $$t \le |x_1 - x_2|.$$
 
-
 Nos viene bien recordar que $x_1, x_2 \le$ `numcells` por lo que *necesariamente* $x_1 - x_2 \le$ `numCells`. También podemos concluir que,
 
 $$|x_1 - x_2| \le \mathtt{numCells}.$$
@@ -120,7 +119,7 @@ Por lo tanto hemos probado que si las semillas son iguales en celdas de  distint
 Aquí notamos que podemos elegir un valor de $t$ que sea estrictamente mayor que `numCells` y eso obligaría necesariamente que las semillas sean **distintas**.
 
 
-# Creating the shells
+## Creando los shells
 ---
 
 Ahora que tenemos nuestra grilla de números pseudo-aleatorios en la superficie de nuestro mesh, podemos crear nuestro primer `shell`, para esto definiremos el color del pixel dada la siguiente condición:
@@ -179,7 +178,9 @@ Si establecemos `_NumShells` y `_NumCells` a $128$ y ajustamos la separación en
 
 ![](imgs/img_highres_zoomed.png)
 
-# Grass
+
+## Césped
+---
 
 Si bien con la implementación actual podemos conseguir algo parecido a lo logrado en *Viva Piñata (2007)*, nuestro Shell Texturing tiene una gran desventaja y es que solo funciona verticalmente, si añadimos el shader a un mesh esférico obtendremos esto.
 
@@ -213,7 +214,7 @@ Con tal operación hemos efectivamente centraddo `cellUv`, sin embargo notamos q
 Ahora que tenemos el origen `cellUv` podemos dibujar un círculo de forma muy sencilla, simplemente calculamos el `length()` de cada `cellUv` respecto al origen.
 
 ![](imgs/img_cell_uv_length.png)
-Luego con nuestro truco anterior, descartamos los pixeles si son mayores que un valor que llamaremos `_CellThickness` $\in [0, 1.5]$.
+Luego con nuestro truco anterior, descartamos los pixeles si son mayores que un valor que llamaremos `_CellThickness` $\in [0, 10]$.
 
 ![](imgs/gif_cell_thickness.gif)
 *Cell thickness variando de 0 a 1.5*
@@ -229,13 +230,91 @@ Efectivamente si multiplicamos `_CellThickness` por `height` hemos obtenido una 
 ![](imgs/img_correct_height_attenuation.png)
 bla bla bla rand - height
 
+Podemos agregar un bloqueo en el descarte de los pixeles del shell cuyo `_ShellIndex = 0` para evitar los huecos en la base.
+
+![](imgs/img_base_no_holes.png)
+
+Para finalizar, podemos ajustar el color del pasto a un agradable verde, jugar con los parámetros y ajustar el encuadre de la cámara para obtener un resultado así:
+
+![](imgs/img_result_2.png)
+
+## Iluminación
+---
+
+Como ejercicio final, se puede mejorar el modelo de iluminación y agregar demás efectos para embellecer un render final de la técnica de shell texturing, para eso me basaré en el trabajo de Adrian Mendez y su implementación del modelo de iluminación de *Genshin Impact*.
+
+Utilizaremos la esféra para probar el modelo de iluminación.
+
+![](imgs/img_shell_sphere_no_light.png)
+Vemos la esféra con el modelo de iluminación *naive* que teníamos implementado desde antes. Lo primero que haremos para mejorar la luz es definir el color de cada pixel ($P_c$) utilizando el clásico *Diffuse Lighting Model*.
+
+El valor de $P_c$ será igual al $\cos{\theta}$ entre la `normal` de la superficie del mesh y un vector *normalizado* que **apunte hacia la luz**. El cálculo se ve así:
+
+$$P_c = N_d \cdot L_d.$$
+
+Notamos que se utiliza el producto punto en lugar de `cos()` en la ecuación, esto es debido a la definición de `dot(x,y)` la cual define como:
+
+$$\vec{u} \cdot \vec{v} = \left|\vec{u}\right| \left|\vec{v}\right| \cos{\theta}.$$
+
+Es ahí donde podemos notar que si ambos vectores están normalizados (lo cual es nuestro caso), la ecuación nos queda como,
+
+$$\vec{u} \cdot \vec{v} = 1 \times 1 \times \cos{\theta}. \\
+\vec{u} \cdot \vec{v} = cos \theta. $$
+
+Por lo que,
+$$\hat{u} \cdot \hat{v} = \cos{\theta}.$$
+
+En Unity, podemos obtener el vector normalizado que apunta hacia la dirección de la luz si consultamos el *Manual de Built-in Shader Variables^[3]*, donde se encuentra estípulado que dicho vector se puede se puede acceder con la variable `_WorldSpaceLight0`. Es importante que esta variable esté en *world space*, ya que si normalizamos este vector (quitarle su magnitud), obtendremos la dirección hacia su posición desde el origen del mundo.
+
+Antes de mostrar el resultado, destacaré el hecho de que el dominio de la función $\cos{\theta}$ es $(-1 \le \cos{\theta} \le 1)$ y al no existir luz negativa, se *clampea* el resultado al rango $[0, 1]$. Por lo que la ecuación final queda:
+
+$$P_c = \max(0, N \cdot \hat{L_p}).$$
+
+Donde $N$ es la normal y $L_p$ es la posición de la luz en espacio mundial.
+
+![](imgs/img_ndotl.png)
+*Resultado del diffuse lightning*
+
+Ahora como toque más artístico, controlaremos la transición entre negro a blanco con un `smoothstep` entre $0$ y un valor que llamaremos `_LightSmooth` $\in [0, 10]$.
+
+
+
+![](imgs/gif_light_smooth.gif)
+*light smooth variando de 0 a 10.
+
+Utilizando el valor de nuestro *diffuse* suavizado, generamos un `lerp()` entre un color de sombra a elección y un color base.
+
+![](imgs/img_shadow_and_base_color.png)
+
+En mi opinión, la sombra luce muy *dura*, por lo que seguiré los pasos de Acerola en su video sobre Shell Texturing y aplicaré un *Half lambert diffuse^[5]*, que no es nada más que modificar la diffusión de Lambert tal que,
+
+$$P_c = \max(0, N \cdot \hat{L_p}) \times 0.5 + 0.5.$$
+
+para así desplazar el rango de $P_c$ de $[-1, 1]$ originalmente a un nuevo rango $[0, 1]$.
+
+![](imgs/img_half_lambert.png)
+Es importante mencionar que el modelo de *Half Lambert Diffuse* es un modelo de iluminación no físicamente realista^[5], ya que rompe la Ley de Coseno de Lambert^[6].
+
+Adicionalmente, podemos agregar un valor `_ShadowIntensity` $\in [0, 1]$ para ajustar la intensidad de la sombra producida.
+
+![](imgs/gif_shadow_intensity.gif)
+*shadow intensity variando de 0 a 1*
+
+// TODO - SECONDARY SHADOW
 
 
 
 
+## Bibliografía:
 
+[1]G. Gunell "Acerola", “How Are Games Rendering Fur?,” YouTube, Oct. 30, 2023. https://youtu.be/9dr-tRQzij4?si=OBngN7l8wAV_BQ98 (accessed Jun. 27, 2024).
 
+[2]A. Mendez, “Genshin Impact Character Shader Breakdown [Unity URP],” adrianmendez.artstation.com, Feb. 27, 2022. https://adrianmendez.artstation.com/projects/wJZ4Gg (accessed Jun. 27, 2024).
 
-## References:
+[3]Unity Technologies, “Unity - Manual: Built-in Shader Variables,” docs.unity3d.com. https://docs.unity3d.com/Manual/SL-UnityShaderVariables.html (accessed Jun. 27, 2024).
 
-[1]M. Bischoff, “The World’s Simplest Theorem Shows That 8,000 People Globally Have the Same Number of Hairs on Their Head,” Scientific American, Mar. 20, 2023. https://www.scientificamerican.com/article/the-worlds-simplest-theorem-shows-that-8-000-people-globally-have-the-same-number-of-hairs-on-their-head/ (accessed Jun. 13, 2024).
+[5]Valve, “Half Lambert - Valve Developer Community,” developer.valvesoftware.com, Jan. 07, 2024. https://developer.valvesoftware.com/wiki/Half_Lambert (accessed Jun. 28, 2024).
+
+[6]Wikipedia Contributors, “Lambert’s Cosine Law,” Wikipedia, Jan. 29, 2021. https://en.wikipedia.org/wiki/Lambert%27s_cosine_law (accessed Jun. 28, 2024).
+
+[7]M. Bischoff, “The World’s Simplest Theorem Shows That 8,000 People Globally Have the Same Number of Hairs on Their Head,” Scientific American, Mar. 20, 2023. https://www.scientificamerican.com/article/the-worlds-simplest-theorem-shows-that-8-000-people-globally-have-the-same-number-of-hairs-on-their-head/ (accessed Jun. 13, 2024).

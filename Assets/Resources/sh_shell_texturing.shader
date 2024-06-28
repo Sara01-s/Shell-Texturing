@@ -38,10 +38,15 @@ Shader "Custom/Unlit/sh_shell_texturing" {
 			int _ShellIndex;
 			float _ShellsSeparation;
 
-			float _LightAttenuation;
 			float _HeightAttenuation;
 			float _ShellLength;
 			float _CellThickness;
+
+			float4 _Color;
+			float4 _ShadowColor;
+			float _LightAttenuation;
+			float _LightSmooth;
+			float _ShadowIntensity;
 
 			
             VertexOut VertShader(VertexIn i) {
@@ -79,7 +84,6 @@ Shader "Custom/Unlit/sh_shell_texturing" {
 				uint2 cell = uint2(i.uv);
 				float rand = hash(seed(cell.x, cell.y, _NumCells + 1));
 
-                float3 color = float3(1.0, 0.0, 0.0);
 				float height = (float)_ShellIndex / (float)_NumShells;
 
 				float2 cellUv = frac(i.uv) * 2.0 - 1.0;
@@ -89,10 +93,14 @@ Shader "Custom/Unlit/sh_shell_texturing" {
 					discard;
 				}
 
-				float ldot = dot(normalize(_WorldSpaceLightPos0.xyz), i.normalWorld);
-				float lSmooth = smoothstep(0.0, 0.1, ldot);
+				float diffuse = dot(i.normalWorld, normalize(_WorldSpaceLightPos0.xyz));
+				float halfLambert = diffuse * 0.5 + 0.5;
+				float clampedHalfLambert = max(_ShadowIntensity, halfLambert);
 
-                return fixed4(color * pow(height, _LightAttenuation) * ldot, 1.0);
+				float smoothedLight = smoothstep(0.0, _LightSmooth, clampedHalfLambert);
+				float4 lightColor = lerp(_ShadowColor, _Color, smoothedLight);
+
+				return fixed4(lightColor);
             }
 
             ENDCG

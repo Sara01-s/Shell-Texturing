@@ -18,12 +18,18 @@ internal sealed class ShellMesh : MonoBehaviour {
 	[SerializeField] private float _heightAttenuation = 1.0f;
 	[Range(1.0f, 10.0f)]
 	[SerializeField] private float _shellLength = 1.0f;
-	[Range(0.0f, 1.5f)]
+	[Range(0.0f, 100.0f)]
 	[SerializeField] private float _cellThickness = 0.5f;
 
 	[Header("Lighting")]
+	[SerializeField] private Color _color;
+	[SerializeField] private Color _shadowColor;
 	[Range(0.0f, 10.0f)]
 	[SerializeField] private float _lightAttenuation = 1.0f;
+	[Range(0.0f, 10.0f)]
+	[SerializeField] private float _lightSmooth = 1.0f;
+	[Range(0.0f, 1.0f)]
+	[SerializeField] private float _shadowIntensity = 1.0f;
 
 	private Material _material;
 	private GameObject[] _layers;
@@ -72,7 +78,11 @@ internal sealed class ShellMesh : MonoBehaviour {
 			shellProperties.SetFloat("_ShellLength", _shellLength);
 			shellProperties.SetFloat("_CellThickness", _cellThickness);
 
+			shellProperties.SetColor("_Color", _color);
+			shellProperties.SetColor("_ShadowColor", _shadowColor);
+			shellProperties.SetFloat("_ShadowIntensity", 1.0f - _shadowIntensity);
 			shellProperties.SetFloat("_LightAttenuation", _lightAttenuation);
+			shellProperties.SetFloat("_LightSmooth", _lightSmooth);
 
 			_layers[i].GetComponent<MeshRenderer>().SetPropertyBlock(shellProperties);
 		}
