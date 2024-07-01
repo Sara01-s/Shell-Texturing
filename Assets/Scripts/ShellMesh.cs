@@ -9,7 +9,7 @@ internal sealed class ShellMesh : MonoBehaviour {
 
 	[Range(1, 256)]
 	[SerializeField] private uint _numShells = 256;
-	[Range(1, 256)]
+	[Range(1, 2048)]
 	[SerializeField] private int _numCells = 1;
 	[Range(0.0f, 5.0f)]
 	[SerializeField] private float _shellsSeparation = 1.0f;
@@ -30,6 +30,7 @@ internal sealed class ShellMesh : MonoBehaviour {
 	[SerializeField] private float _lightSmooth = 1.0f;
 	[Range(0.0f, 1.0f)]
 	[SerializeField] private float _shadowIntensity = 1.0f;
+	[SerializeField] private Vector4 _secondaryShadowOffset;
 
 	private Material _material;
 	private GameObject[] _layers;
@@ -81,6 +82,7 @@ internal sealed class ShellMesh : MonoBehaviour {
 			shellProperties.SetColor("_Color", _color);
 			shellProperties.SetColor("_ShadowColor", _shadowColor);
 			shellProperties.SetColor("_SecondaryShadowColor", _secondaryShadowColor);
+			shellProperties.SetVector("_OuterShadowOffset", _secondaryShadowOffset);
 			shellProperties.SetFloat("_ShadowIntensity", 1.0f - _shadowIntensity);
 			shellProperties.SetFloat("_LightAttenuation", _lightAttenuation);
 			shellProperties.SetFloat("_LightSmooth", _lightSmooth);

@@ -300,7 +300,9 @@ Adicionalmente, podemos agregar un valor `_ShadowIntensity` $\in [0, 1]$ para aj
 ![](imgs/gif_shadow_intensity.gif)
 *shadow intensity variando de 0 a 1*
 
-// TODO - SECONDARY SHADOW
+Luego creamos un segundo diffuse lighting con distinto offset y color para dar un efecto de sombra secundaria.
+
+Para finalizar, buscamos un modelo interesante y componomenos una bonita escena =).
 
 
 

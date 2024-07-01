@@ -45,6 +45,7 @@ Shader "Custom/Unlit/sh_shell_texturing" {
 			float4 _Color;
 			float4 _ShadowColor;
 			float4 _SecondaryShadowColor;
+			float4 _OuterShadowOffset;
 			float _LightAttenuation;
 			float _LightSmooth;
 			float _ShadowIntensity;
@@ -58,6 +59,7 @@ Shader "Custom/Unlit/sh_shell_texturing" {
 				height = pow(height, _HeightAttenuation);
 
 				i.pos.xyz += i.normal * _ShellLength * height;
+				i.pos.xyz += 0.4 * height * height * sin(5.0 * _Time.y - 4.0 * i.pos.y - 5.0 * height) * i.tanget;
 
                 output.pos = UnityObjectToClipPos(i.pos);
                 output.uv = TRANSFORM_TEX(i.uv, _MainTex);
@@ -93,26 +95,26 @@ Shader "Custom/Unlit/sh_shell_texturing" {
 					discard;
 				}
 
-				float diffuse = dot(i.normalWorld, normalize(_WorldSpaceLightPos0.xyz));
+				// Lightning
+				float3 dirToLight = normalize(_WorldSpaceLightPos0.xyz);
+
+				// Primary lightning
+				float diffuse = dot(i.normalWorld, dirToLight);
 				float halfLambert = diffuse * 0.5 + 0.5;
 				float clampedHalfLambert = max(_ShadowIntensity, halfLambert);
-				
-
-				float diffuse2 = dot(i.normalWorld, normalize(_WorldSpaceLightPos0.xyz));
-				float smoothedDiffuse2 = smoothstep(0.0, 0.4, diffuse2);
-
-
 				float smoothedLight = smoothstep(0.0, _LightSmooth, clampedHalfLambert);
 				float4 primaryLightColor = lerp(_ShadowColor, _Color, smoothedLight);
 
-				float4 secondaryLightColor = lerp(primaryLightColor, _SecondaryShadowColor, smoothedLight);
-				float secondaryShadowMask = smoothstep(0.1, 0.5, smoothedDiffuse2) 
-										  * smoothstep(0.9, 0.3, smoothedDiffuse2);
-				
-				float4 lightColor = lerp(primaryLightColor, _SecondaryShadowColor, secondaryShadowMask);
-				
+				// Secondary light
+            	float3 offsetNormal = normalize(i.normalWorld + _OuterShadowOffset.xyz);
+            	float secondaryDiffuse = dot(offsetNormal, dirToLight);
+            	float secondaryHalfLambert = secondaryDiffuse * 0.5 + 0.5;
+            	float secondarySmoothedLight = smoothstep(0.0, _LightAttenuation, secondaryHalfLambert);
+            	float4 secondaryLightColor = lerp(_SecondaryShadowColor, _Color, secondarySmoothedLight);
 
-				return fixed4(lightColor);
+				float4 finalColor = lerp(primaryLightColor, secondaryLightColor, secondarySmoothedLight);
+
+				return fixed4(finalColor);
             }
 
             ENDCG
