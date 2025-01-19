@@ -2,4 +2,4 @@
 
 ### Results
 ---
-![Shell Texturing](https://sara01-s.github.io/Portfolio/images/blogs/shell-texturing/imgs/gif_hand_result.gif)
+![Shell Texturing](tex_result.png)
